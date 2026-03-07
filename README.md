@@ -6,6 +6,8 @@ Base project for a personal finance web app using Next.js + TypeScript + Tailwin
 
 - Node.js 24+
 - pnpm 10+
+- Docker Desktop
+- Supabase CLI
 
 ## Quick Start
 
@@ -15,6 +17,43 @@ pnpm dev
 ```
 
 Open `http://localhost:3000`.
+
+## Supabase Local Setup (DEV-002)
+
+1. Initialize Supabase in the repo (first time only):
+
+```bash
+supabase init
+```
+
+2. Start the local Supabase stack:
+
+```bash
+pnpm supabase:start
+pnpm supabase:status
+```
+
+3. Create local env file:
+
+```bash
+cp .env.example .env.local
+```
+
+4. Set values in `.env.local`:
+
+- `NEXT_PUBLIC_SUPABASE_URL`: local API URL shown by `supabase status`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: local anon key shown by `supabase status`
+
+5. Run app and verify Supabase smoke health:
+
+```bash
+pnpm dev
+```
+
+Visit `http://localhost:3000/api/health/supabase`.
+
+- Expected success: `{ "status": "ok" }`
+- If env vars are missing or Supabase is down, endpoint returns `500` with an error message.
 
 ## Quality Commands
 
@@ -26,6 +65,9 @@ pnpm format:check
 pnpm test
 pnpm test:e2e
 pnpm check
+pnpm supabase:start
+pnpm supabase:status
+pnpm supabase:stop
 ```
 
 ## Git Hooks (Husky)
@@ -69,3 +111,17 @@ Out of scope for this ticket:
 - Authentication
 - Data model / RLS
 - Financial domain logic
+
+## Scope of DEV-002
+
+Included in this ticket:
+
+- Supabase local integration and env convention
+- Base clients for browser/server usage in App Router
+- Technical smoke check endpoint for Supabase connectivity
+
+Out of scope for this ticket:
+
+- Auth screens and flows
+- Data model tables/migrations
+- RLS policies
