@@ -125,3 +125,29 @@ Out of scope for this ticket:
 - Auth screens and flows
 - Data model tables/migrations
 - RLS policies
+
+## Scope of DEV-003
+
+Included in this ticket:
+
+- Supabase Auth with email/password signup, login and logout
+- Protected app routes plus auth/public route separation
+- `src/proxy.ts` session refresh + early redirects for Next.js 16
+- Server-side session guards in auth and protected layouts
+- Private app skeleton routes aligned to `UX/app_skeleton.pen`
+
+Out of scope for this ticket:
+
+- Forgot password flow
+- OAuth / MFA
+- User profile persistence beyond Supabase Auth
+- Domain features for accounts, transactions, categories or reports
+
+## Auth Routing Notes
+
+- Public routes: `/auth/login`, `/auth/signup`
+- Private routes: `/`, `/accounts`, `/transactions`, `/categories`, `/transfers`, `/credit-card`, `/fx`, `/reports`
+- `src/proxy.ts` refreshes Supabase session cookies and redirects:
+  - anonymous users from private routes to `/auth/login`
+  - authenticated users away from `/auth/*` to `/`
+- Protected and auth layouts repeat the guard server-side to avoid relying only on `proxy`

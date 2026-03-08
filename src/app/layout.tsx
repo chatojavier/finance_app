@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Personal Finance App",
-  description: "Base setup for personal finance management.",
+  description: "Personal finance MVP with Supabase auth and protected routes.",
 };
 
 export default function RootLayout({
