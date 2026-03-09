@@ -385,6 +385,31 @@ begin
   begin
     insert into public.transactions (user_id, account_id, category_id, amount, direction, currency, occurred_at)
     values (
+      '22222222-2222-2222-2222-222222222222',
+      'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
+      'cccccccc-cccc-4ccc-8ccc-ccccccccccc1',
+      10.00,
+      'out',
+      'USD',
+      timezone('utc', now())
+    );
+    raise exception 'Expected uniform denial for spoofed transaction user_id';
+  exception
+    when others then
+      if sqlstate = '42501' then
+        null;
+      else
+        raise;
+      end if;
+  end;
+end
+$$;
+
+do $$
+begin
+  begin
+    insert into public.transactions (user_id, account_id, category_id, amount, direction, currency, occurred_at)
+    values (
       '11111111-1111-1111-1111-111111111111',
       'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
       'cccccccc-cccc-4ccc-8ccc-ccccccccccc1',

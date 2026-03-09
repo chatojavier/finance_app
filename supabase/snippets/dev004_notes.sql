@@ -19,4 +19,9 @@ DEV-004 | Decisions log
 
 5) Transaction currency consistency:
    - transactions.currency must match the referenced account.currency in v0.
+
+6) Spoofed user_id protection in trigger:
+   - validate_transaction_ownership trusts auth.uid() as source of identity.
+   - inserts/updates with NEW.user_id different from auth.uid() are denied uniformly
+     with a generic 42501 error to avoid cross-tenant signal leakage.
 */
