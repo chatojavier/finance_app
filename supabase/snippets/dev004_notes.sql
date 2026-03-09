@@ -12,4 +12,11 @@ DEV-004 | Decisions log
 3) profiles lifecycle:
    - profiles row is NOT auto-created in this ticket.
    - Profile creation is deferred to onboarding/auth follow-up flow.
+
+4) Accounts deletion policy:
+   - Hard delete is blocked for authenticated users (no DELETE policy on accounts).
+   - Historical transactions must remain immutable; account archival is the supported path.
+
+5) Transaction currency consistency:
+   - transactions.currency must match the referenced account.currency in v0.
 */

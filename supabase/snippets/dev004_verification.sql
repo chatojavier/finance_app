@@ -140,12 +140,21 @@ begin
     and policyname in (
       'accounts_select_own',
       'accounts_insert_own',
-      'accounts_update_own',
-      'accounts_delete_own'
+      'accounts_update_own'
     );
 
-  if expected_count <> 4 then
+  if expected_count <> 3 then
     raise exception 'Missing ownership policies on public.accounts';
+  end if;
+
+  if exists (
+    select 1
+    from pg_policies
+    where schemaname = 'public'
+      and tablename = 'accounts'
+      and policyname = 'accounts_delete_own'
+  ) then
+    raise exception 'accounts_delete_own policy must not exist';
   end if;
 
   select count(*)
@@ -343,6 +352,14 @@ begin
   if affected_rows <> 0 then
     raise exception 'User A should not delete user B category';
   end if;
+
+  delete from public.accounts
+  where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1';
+  get diagnostics affected_rows = row_count;
+
+  if affected_rows <> 0 then
+    raise exception 'User A should not hard-delete own account';
+  end if;
 end
 $$;
 
@@ -355,6 +372,31 @@ begin
   exception
     when others then
       if sqlstate = '42501' or position('row-level security' in lower(sqlerrm)) > 0 then
+        null;
+      else
+        raise;
+      end if;
+  end;
+end
+$$;
+
+do $$
+begin
+  begin
+    insert into public.transactions (user_id, account_id, category_id, amount, direction, currency, occurred_at)
+    values (
+      '11111111-1111-1111-1111-111111111111',
+      'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1',
+      'cccccccc-cccc-4ccc-8ccc-ccccccccccc1',
+      10.00,
+      'out',
+      'USD',
+      timezone('utc', now())
+    );
+    raise exception 'Expected check violation for account/transaction currency mismatch';
+  exception
+    when others then
+      if sqlstate = '23514' then
         null;
       else
         raise;
@@ -412,6 +454,28 @@ begin
   end;
 end
 $$;
+
+reset role;
+
+do $$
+begin
+  begin
+    delete from public.accounts
+    where id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaa1';
+    raise exception 'Expected FK restriction when deleting account with transactions';
+  exception
+    when others then
+      if sqlstate = '23503' then
+        null;
+      else
+        raise;
+      end if;
+  end;
+end
+$$;
+
+set local role authenticated;
+select set_config('request.jwt.claim.role', 'authenticated', true);
 
 -- User B can only read own data
 select set_config('request.jwt.claim.sub', '22222222-2222-2222-2222-222222222222', true);
