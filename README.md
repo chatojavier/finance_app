@@ -151,3 +151,41 @@ Out of scope for this ticket:
   - anonymous users from private routes to `/auth/login`
   - authenticated users away from `/auth/*` to `/`
 - Protected and auth layouts repeat the guard server-side to avoid relying only on `proxy`
+
+## Scope of DEV-004
+
+Included in this ticket:
+
+- Initial Supabase migration for data model v0 (`profiles`, `currencies`, `accounts`, `categories`, `transactions`)
+- Constraints and indexes for MVP queries and data integrity
+- RLS policies for per-user ownership on protected tables
+- Seed data for MVP currencies (`PEN`, `USD`, `EUR`, `BTC`)
+- Verification scripts for schema, RLS isolation, and ownership checks
+
+Out of scope for this ticket:
+
+- Signup/onboarding UI changes to create profile records
+- Auto profile creation trigger on `auth.users`
+- Domain CRUD screens for accounts, categories, and transactions
+
+DEV-004 artifacts:
+
+- `supabase/migrations/20260308235900_dev004_model_v0_rls.sql`
+- `supabase/seed.sql`
+- `supabase/snippets/dev004_notes.sql`
+- `supabase/snippets/dev004_verification.sql`
+
+Validation commands:
+
+```bash
+pnpm supabase:start
+supabase db reset
+docker exec -i supabase_db_finance_app psql -v ON_ERROR_STOP=1 -U postgres -d postgres < supabase/snippets/dev004_verification.sql
+supabase db lint
+```
+
+Remote deploy command:
+
+```bash
+supabase db push
+```
