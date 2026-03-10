@@ -6,12 +6,15 @@ type AccountsErrorProps = {
 };
 
 export default function AccountsError({ error, reset }: AccountsErrorProps) {
+  if (process.env.NODE_ENV !== "production") {
+    // Keep diagnostics in dev tools without exposing low-level details in the UI.
+    console.error("Accounts route error", error);
+  }
+
   return (
     <div className="rounded-3xl border border-rose-200 bg-rose-50 p-6">
       <h3 className="text-lg font-semibold text-rose-900">No se pudo cargar la vista de cuentas</h3>
-      <p className="mt-2 text-sm text-rose-800">
-        {error.message || "Ocurrió un error inesperado. Intenta nuevamente."}
-      </p>
+      <p className="mt-2 text-sm text-rose-800">Ocurrió un error inesperado. Intenta nuevamente.</p>
       <button
         type="button"
         onClick={() => reset()}

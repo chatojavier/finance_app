@@ -64,6 +64,18 @@ values (
   false
 );
 
+insert into public.transactions (id, user_id, account_id, amount, direction, currency, occurred_at, note)
+values (
+  'dddddddd-dddd-4ddd-8ddd-ddddddddddd3',
+  '33333333-3333-4333-8333-333333333333',
+  'cccccccc-cccc-4ccc-8ccc-ccccccccccc3',
+  30.00,
+  'in',
+  'PEN',
+  timezone('utc', now()),
+  'Before archive'
+);
+
 do $$
 begin
   begin
@@ -85,6 +97,21 @@ $$;
 update public.accounts
 set archived = true
 where id = 'cccccccc-cccc-4ccc-8ccc-ccccccccccc3';
+
+do $$
+declare
+  affected_rows integer;
+begin
+  update public.transactions
+  set note = 'Updated after archive'
+  where id = 'dddddddd-dddd-4ddd-8ddd-ddddddddddd3';
+  get diagnostics affected_rows = row_count;
+
+  if affected_rows <> 1 then
+    raise exception 'Expected update to existing archived-account transaction to succeed';
+  end if;
+end
+$$;
 
 do $$
 begin

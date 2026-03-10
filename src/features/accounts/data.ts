@@ -2,6 +2,7 @@ import "server-only";
 
 import { DEFAULT_RECENT_TRANSACTIONS_LIMIT } from "@/features/accounts/constants";
 import { normalizeDerivedBalance } from "@/features/accounts/balance";
+import { isUuid } from "@/features/accounts/id";
 import type {
   AccountDetail,
   AccountListItem,
@@ -70,6 +71,10 @@ export async function listAccountsWithBalance(
 }
 
 export async function getAccountByIdWithBalance(accountId: string): Promise<AccountDetail | null> {
+  if (!isUuid(accountId)) {
+    return null;
+  }
+
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase.rpc("get_account_with_balance", {
     p_account_id: accountId,
@@ -87,6 +92,10 @@ export async function listRecentTransactionsForAccount(
   accountId: string,
   limit = DEFAULT_RECENT_TRANSACTIONS_LIMIT
 ): Promise<AccountRecentTransaction[]> {
+  if (!isUuid(accountId)) {
+    return [];
+  }
+
   const supabase = await createServerSupabaseClient();
   const { data, error } = await supabase
     .from("transactions")
