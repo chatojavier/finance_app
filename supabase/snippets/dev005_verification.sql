@@ -64,6 +64,16 @@ values (
   false
 );
 
+insert into public.accounts (id, user_id, name, type, currency, archived)
+values (
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee4',
+  '33333333-3333-4333-8333-333333333333',
+  'Wallet Active DEV005',
+  'asset',
+  'PEN',
+  false
+);
+
 insert into public.transactions (id, user_id, account_id, amount, direction, currency, occurred_at, note)
 values (
   'dddddddd-dddd-4ddd-8ddd-ddddddddddd3',
@@ -74,6 +84,18 @@ values (
   'PEN',
   timezone('utc', now()),
   'Before archive'
+);
+
+insert into public.transactions (id, user_id, account_id, amount, direction, currency, occurred_at, note)
+values (
+  'ffffffff-ffff-4fff-8fff-fffffffffff4',
+  '33333333-3333-4333-8333-333333333333',
+  'eeeeeeee-eeee-4eee-8eee-eeeeeeeeeee4',
+  10.00,
+  'in',
+  'PEN',
+  timezone('utc', now()),
+  'Move attempt seed'
 );
 
 do $$
@@ -126,6 +148,24 @@ begin
       timezone('utc', now())
     );
     raise exception 'Expected archived account transaction denial';
+  exception
+    when others then
+      if sqlstate = '23514' then
+        null;
+      else
+        raise;
+      end if;
+  end;
+end
+$$;
+
+do $$
+begin
+  begin
+    update public.transactions
+    set account_id = 'cccccccc-cccc-4ccc-8ccc-ccccccccccc3'
+    where id = 'ffffffff-ffff-4fff-8fff-fffffffffff4';
+    raise exception 'Expected archived account update-move denial';
   exception
     when others then
       if sqlstate = '23514' then
