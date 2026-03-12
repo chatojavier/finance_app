@@ -4,8 +4,16 @@ import { getCategoryKindLabel } from "@/features/categories/constants";
 import { listCategoryOptions } from "@/features/categories/data";
 import type { CategoryOption } from "@/features/categories/types";
 
-export default async function TransactionsPage() {
+type TransactionsPageProps = {
+  searchParams: Promise<{
+    accountId?: string;
+  }>;
+};
+
+export default async function TransactionsPage({ searchParams }: TransactionsPageProps) {
   const route = getRequiredRouteConfig("/transactions");
+  const params = await searchParams;
+  const accountId = params.accountId?.trim();
   let categoryOptions: CategoryOption[] = [];
   let categoriesError: string | null = null;
 
@@ -19,6 +27,12 @@ export default async function TransactionsPage() {
 
   return (
     <div className="space-y-6">
+      {accountId ? (
+        <section className="rounded-3xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
+          Cuenta preseleccionada: <span className="font-semibold">{accountId}</span>
+        </section>
+      ) : null}
+
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
         <p className="text-xs font-semibold tracking-[0.18em] text-emerald-700 uppercase">
           Integración DEV-006

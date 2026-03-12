@@ -36,14 +36,14 @@ export const PRIVATE_ROUTE_CONFIGS: AppRouteConfig[] = [
     href: "/transactions",
     title: "Transactions",
     navLabel: "Transactions",
-    description: "Placeholder privado para el flujo MVP de movimientos.",
+    description: "Flujo de movimientos financieros con impacto en saldos derivados.",
     mobilePlacement: "primary",
   },
   {
     href: "/accounts",
     title: "Accounts",
     navLabel: "Accounts",
-    description: "Placeholder privado para cuentas y saldos derivados.",
+    description: "CRUD de cuentas con moneda obligatoria, archivado y saldo derivado.",
     mobilePlacement: "primary",
   },
   {
