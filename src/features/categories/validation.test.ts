@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   normalizeCategoryName,
-  toCategoryNameKey,
   validateCreateCategoryInput,
   validateUpdateCategoryInput,
 } from "@/features/categories/validation";
@@ -41,8 +40,7 @@ describe("categories validation", () => {
     expect(result.data).toBeNull();
   });
 
-  it("builds duplicate-comparison key from normalized name", () => {
+  it("normalizes category names consistently for validation", () => {
     expect(normalizeCategoryName("  CAFE   mensual ")).toBe("CAFE mensual");
-    expect(toCategoryNameKey("  CAFE   mensual ")).toBe("cafe mensual");
   });
 });

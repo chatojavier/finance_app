@@ -3,7 +3,7 @@ DEV-006 verification
 Validates:
 1) Normalized category name uniqueness per user + kind.
 2) category kind can change only when category has no transactions.
-3) Required DEV-006 indexes/triggers exist.
+3) Required DEV-006 indexes/functions/triggers exist.
 */
 
 begin;
@@ -36,6 +36,15 @@ begin
       and not tgisinternal
   ) then
     raise exception 'Missing trigger: prevent_category_kind_update_when_used';
+  end if;
+
+  if not exists (
+    select 1
+    from pg_proc
+    where pronamespace = 'public'::regnamespace
+      and proname = 'find_category_duplicate_by_name'
+  ) then
+    raise exception 'Missing function: public.find_category_duplicate_by_name';
   end if;
 end
 $$;
@@ -84,6 +93,42 @@ values (
   '  Alimentacion   Casa  ',
   'expense'
 );
+
+do $$
+declare
+  duplicate_id uuid;
+  duplicate_name text;
+begin
+  select d.id, d.name
+  into duplicate_id, duplicate_name
+  from public.find_category_duplicate_by_name('expense', 'alimentacion casa', null) as d;
+
+  if duplicate_id is distinct from '55555555-5555-4555-8555-555555555551'::uuid
+    or duplicate_name is distinct from '  Alimentacion   Casa  ' then
+    raise exception 'Expected duplicate lookup to return seeded category, got id=% name=%',
+      duplicate_id,
+      duplicate_name;
+  end if;
+end
+$$;
+
+do $$
+declare
+  duplicate_id uuid;
+begin
+  select d.id
+  into duplicate_id
+  from public.find_category_duplicate_by_name(
+    'expense',
+    'alimentacion casa',
+    '55555555-5555-4555-8555-555555555551'::uuid
+  ) as d;
+
+  if duplicate_id is not null then
+    raise exception 'Expected duplicate lookup to ignore excluded category id, got %', duplicate_id;
+  end if;
+end
+$$;
 
 do $$
 begin

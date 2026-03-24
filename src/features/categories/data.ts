@@ -1,7 +1,6 @@
 import "server-only";
 
 import type { CategoryKind, CategoryListItem, CategoryOption } from "@/features/categories/types";
-import { toCategoryNameKey } from "@/features/categories/validation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 
 type CategoryRow = {
@@ -12,7 +11,7 @@ type CategoryRow = {
   updated_at: string;
 };
 
-type CategoryDuplicateCandidateRow = {
+type CategoryDuplicateRow = {
   id: string;
   name: string;
 };
@@ -116,21 +115,17 @@ export async function findCategoryByNormalizedName(
   kind: CategoryKind,
   name: string,
   excludeCategoryId?: string
-): Promise<CategoryDuplicateCandidateRow | null> {
-  const normalizedNameKey = toCategoryNameKey(name);
+): Promise<CategoryDuplicateRow | null> {
   const supabase = await createServerSupabaseClient();
-  const { data, error } = await supabase.from("categories").select("id, name").eq("kind", kind);
+  const { data, error } = await supabase.rpc("find_category_duplicate_by_name", {
+    p_kind: kind,
+    p_name: name,
+    p_exclude_category_id: excludeCategoryId ?? null,
+  });
 
   if (error) {
     throw error;
   }
 
-  const duplicate =
-    (data as CategoryDuplicateCandidateRow[] | null)?.find(
-      (candidate) =>
-        candidate.id !== excludeCategoryId &&
-        toCategoryNameKey(candidate.name) === normalizedNameKey
-    ) ?? null;
-
-  return duplicate;
+  return ((data as CategoryDuplicateRow[] | null) ?? [])[0] ?? null;
 }

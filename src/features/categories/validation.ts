@@ -19,10 +19,6 @@ export function normalizeCategoryName(name: string): string {
   return name.trim().replace(/\s+/g, " ");
 }
 
-export function toCategoryNameKey(name: string): string {
-  return normalizeCategoryName(name).toLocaleLowerCase("en-US");
-}
-
 function isValidCategoryKind(value: string): value is CategoryKind {
   return CATEGORY_KINDS.includes(value as CategoryKind);
 }
