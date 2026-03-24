@@ -1,10 +1,20 @@
 {
   "version": 1,
   "skills": {
-    "supabase-nextjs": {
+    "code-review-pro": {
+      "source": "onewave-ai/claude-skills",
+      "sourceType": "github",
+      "computedHash": "445641e6b9eaa5a00f49060259fb4e23a8f339536ec7fc313e39b817dd402a51"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    },
+    "supabase": {
       "source": "alinaqi/claude-bootstrap",
       "sourceType": "github",
-      "computedHash": "b0aa1036e141e62b90e96606bb66385bd7cf086aecadf3ccf6fc8c16aaf039b4"
+      "computedHash": "e091d7b37adbe524aab8665ca34007845bb521b906127b3108ce5a1c36c87d1a"
     }
   }
 }

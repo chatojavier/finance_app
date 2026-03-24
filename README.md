@@ -18,6 +18,24 @@ pnpm dev
 
 Open `http://localhost:3000`.
 
+## AI Skills
+
+This repo tracks `skills-lock.json` so contributors can restore the same pinned skill set locally. The generated `.agents/` folder is local-only and is intentionally ignored by git.
+
+Install the skills declared in the lock file from the repo root:
+
+```bash
+npx skills experimental_install
+```
+
+Optional checks:
+
+```bash
+npx skills list
+```
+
+If your agent/tooling requires a restart to pick up newly installed skills, restart it after installation.
+
 ## Supabase Local Setup (DEV-002)
 
 1. Initialize Supabase in the repo (first time only):
