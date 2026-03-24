@@ -57,7 +57,7 @@ export const PRIVATE_ROUTE_CONFIGS: AppRouteConfig[] = [
     href: "/categories",
     title: "Categories",
     navLabel: "Categories",
-    description: "Placeholder privado para el CRUD mínimo de categorías.",
+    description: "CRUD mínimo de categorías por usuario para clasificar movimientos.",
     mobilePlacement: "overflow",
   },
   {
