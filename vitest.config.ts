@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 
-const config = {
+const vitestConfig = {
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
@@ -14,4 +14,4 @@ const config = {
   },
 };
 
-export default config;
+export default vitestConfig;
