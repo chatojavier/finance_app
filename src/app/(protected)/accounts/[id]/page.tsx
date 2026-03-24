@@ -59,12 +59,18 @@ export default async function AccountDetailPage({ params }: AccountDetailPagePro
             >
               Editar cuenta
             </Link>
-            <Link
-              href={`/transactions?accountId=${account.id}`}
-              className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
-            >
-              Crear movimiento
-            </Link>
+            {account.archived ? (
+              <span className="inline-flex h-11 items-center justify-center rounded-xl bg-slate-200 px-4 text-sm font-semibold text-slate-500">
+                Cuenta archivada
+              </span>
+            ) : (
+              <Link
+                href={`/transactions?accountId=${account.id}`}
+                className="inline-flex h-11 items-center justify-center rounded-xl bg-emerald-600 px-4 text-sm font-semibold text-white transition hover:bg-emerald-700"
+              >
+                Crear movimiento
+              </Link>
+            )}
           </div>
         </div>
       </section>
