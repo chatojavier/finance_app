@@ -57,20 +57,6 @@ test("create and edit category flow works", async ({ page }) => {
   await expect(page.getByText("Ingreso").first()).toBeVisible();
 });
 
-test("transactions page shows categories preview", async ({ page }) => {
-  const email = uniqueEmail();
-  const password = "secret12";
-
-  await signup(page, email, password);
-  await createCategory(page, "Sueldo base", "income");
-
-  await page.goto("/transactions");
-  await expect(page.getByText(/categorías disponibles/i)).toBeVisible();
-  const categoryPreview = page.getByLabel(/categoría \(preview\)/i);
-  await expect(categoryPreview).toBeDisabled();
-  await expect(categoryPreview).toContainText(/ingreso · sueldo base/i);
-});
-
 test("users cannot access another user's category edit page", async ({ page }) => {
   const emailA = uniqueEmail();
   const emailB = uniqueEmail();

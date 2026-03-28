@@ -111,5 +111,6 @@ export async function updateAccountAction(
 
   revalidatePath("/accounts");
   revalidatePath(`/accounts/${accountId}`);
+  revalidatePath("/transactions");
   redirect(`/accounts/${data.id}`);
 }
