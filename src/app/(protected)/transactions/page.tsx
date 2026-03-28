@@ -11,7 +11,6 @@ import {
   resolveTransactionAccountFilter,
 } from "@/features/transactions/data";
 import type { TransactionListItem } from "@/features/transactions/types";
-import { toDateTimeLocalValue } from "@/features/transactions/validation";
 
 type TransactionsPageProps = {
   searchParams: Promise<{
@@ -106,7 +105,6 @@ export default async function TransactionsPage({ searchParams }: TransactionsPag
         lockedAccount={activeFilteredAccount}
         filterError={effectiveFilterError}
         returnAccountId={activeFilteredAccount?.id ?? null}
-        defaultOccurredAt={toDateTimeLocalValue(new Date())}
       />
 
       <section className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">

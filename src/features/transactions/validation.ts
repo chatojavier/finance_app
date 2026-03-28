@@ -15,6 +15,16 @@ type ValidationResult<T> =
 
 const MAX_DECIMAL_PLACES = 8;
 const DECIMAL_NUMBER_PATTERN = /^\d+(?:[.,]\d+)?$/;
+const DATETIME_LOCAL_PATTERN = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
+const MAX_TIMEZONE_OFFSET_MINUTES = 14 * 60;
+
+type DateTimeLocalParts = {
+  year: number;
+  month: number;
+  day: number;
+  hours: number;
+  minutes: number;
+};
 
 function isValidDirection(value: string): value is TransactionDirection {
   return TRANSACTION_DIRECTIONS.includes(value as TransactionDirection);
@@ -34,6 +44,70 @@ function getDecimalPlaces(value: string): number {
   return decimals.length;
 }
 
+function parseDateTimeLocalParts(value: string): DateTimeLocalParts | null {
+  const match = DATETIME_LOCAL_PATTERN.exec(value.trim());
+  if (!match) {
+    return null;
+  }
+
+  const [, year, month, day, hours, minutes] = match;
+
+  return {
+    year: Number(year),
+    month: Number(month),
+    day: Number(day),
+    hours: Number(hours),
+    minutes: Number(minutes),
+  };
+}
+
+function isExactLocalDate(parts: DateTimeLocalParts): boolean {
+  const date = new Date(parts.year, parts.month - 1, parts.day, parts.hours, parts.minutes);
+
+  return (
+    !Number.isNaN(date.valueOf()) &&
+    date.getFullYear() === parts.year &&
+    date.getMonth() === parts.month - 1 &&
+    date.getDate() === parts.day &&
+    date.getHours() === parts.hours &&
+    date.getMinutes() === parts.minutes
+  );
+}
+
+function normalizeOccurredAt(
+  occurredAtRaw: string,
+  occurredAtOffsetMinutesRaw: string
+): ValidationResult<string> {
+  const parts = parseDateTimeLocalParts(occurredAtRaw);
+  if (!parts || !isExactLocalDate(parts)) {
+    return {
+      data: null,
+      error: "La fecha del movimiento es inválida.",
+    };
+  }
+
+  const occurredAtOffsetMinutes = Number.parseInt(occurredAtOffsetMinutesRaw.trim(), 10);
+  if (
+    !Number.isInteger(occurredAtOffsetMinutes) ||
+    Math.abs(occurredAtOffsetMinutes) > MAX_TIMEZONE_OFFSET_MINUTES
+  ) {
+    return {
+      data: null,
+      error: "No pudimos interpretar la zona horaria del navegador.",
+    };
+  }
+
+  const occurredAtUtc = new Date(
+    Date.UTC(parts.year, parts.month - 1, parts.day, parts.hours, parts.minutes) +
+      occurredAtOffsetMinutes * 60_000
+  );
+
+  return {
+    data: occurredAtUtc.toISOString(),
+    error: null,
+  };
+}
+
 export function toDateTimeLocalValue(date: Date): string {
   const year = date.getFullYear();
   const month = `${date.getMonth() + 1}`.padStart(2, "0");
@@ -42,6 +116,17 @@ export function toDateTimeLocalValue(date: Date): string {
   const minutes = `${date.getMinutes()}`.padStart(2, "0");
 
   return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+
+export function getDateTimeLocalOffsetMinutes(value: string): string | null {
+  const parts = parseDateTimeLocalParts(value);
+  if (!parts || !isExactLocalDate(parts)) {
+    return null;
+  }
+
+  return String(
+    new Date(parts.year, parts.month - 1, parts.day, parts.hours, parts.minutes).getTimezoneOffset()
+  );
 }
 
 export function filterCategoryOptionsByDirection(
@@ -57,6 +142,7 @@ export function validateCreateTransactionInput(input: {
   amount: string;
   direction: string;
   occurredAt: string;
+  occurredAtOffsetMinutes: string;
   categoryId: string;
   note: string;
 }): ValidationResult<CreateTransactionInput> {
@@ -98,11 +184,11 @@ export function validateCreateTransactionInput(input: {
     };
   }
 
-  const occurredAt = new Date(occurredAtRaw);
-  if (Number.isNaN(occurredAt.valueOf())) {
+  const occurredAt = normalizeOccurredAt(occurredAtRaw, input.occurredAtOffsetMinutes);
+  if (occurredAt.error || !occurredAt.data) {
     return {
       data: null,
-      error: "La fecha del movimiento es inválida.",
+      error: occurredAt.error ?? "La fecha del movimiento es inválida.",
     };
   }
 
@@ -119,7 +205,7 @@ export function validateCreateTransactionInput(input: {
       accountId,
       amount,
       direction: input.direction,
-      occurredAt: occurredAt.toISOString(),
+      occurredAt: occurredAt.data,
       categoryId: categoryId || null,
       note: normalizeNote(input.note),
     },

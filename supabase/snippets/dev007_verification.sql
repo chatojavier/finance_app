@@ -121,7 +121,7 @@ values
     'Archived DEV007',
     'asset',
     'PEN',
-    true
+    false
   )
 on conflict (id) do nothing;
 
@@ -164,8 +164,38 @@ values
     'PEN',
     timezone('utc', now()),
     'Egreso válido'
+  ),
+  (
+    '56565656-5656-4565-8565-565656565656',
+    '88888888-8888-4888-8888-888888888881',
+    'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2',
+    null,
+    5.00,
+    'in',
+    'PEN',
+    timezone('utc', now()),
+    'Seed before archive'
   )
 on conflict (id) do nothing;
+
+do $$
+declare
+  affected_rows integer;
+begin
+  update public.accounts
+  set archived = true
+  where id = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbb2';
+
+  update public.transactions
+  set note = 'Ingreso válido actualizado'
+  where id = '56565656-5656-4565-8565-565656565656';
+  get diagnostics affected_rows = row_count;
+
+  if affected_rows <> 1 then
+    raise exception 'Expected update on existing archived-account transaction to succeed';
+  end if;
+end
+$$;
 
 do $$
 begin

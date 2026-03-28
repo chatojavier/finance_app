@@ -29,6 +29,7 @@ export async function createTransactionAction(
     amount: getFormValue(formData, "amount"),
     direction: getFormValue(formData, "direction"),
     occurredAt: getFormValue(formData, "occurred_at"),
+    occurredAtOffsetMinutes: getFormValue(formData, "occurred_at_offset_minutes"),
     categoryId: getFormValue(formData, "category_id"),
     note: getFormValue(formData, "note"),
   });

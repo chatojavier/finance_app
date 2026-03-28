@@ -12,8 +12,10 @@ declare
   account_currency text;
   account_archived boolean;
   category_kind text;
+  moving_to_different_account boolean;
 begin
   trusted_user_id := auth.uid();
+  moving_to_different_account := tg_op = 'UPDATE' and new.account_id is distinct from old.account_id;
 
   if trusted_user_id is null or new.user_id is distinct from trusted_user_id then
     raise exception 'Invalid account or category reference for transaction'
@@ -31,7 +33,7 @@ begin
       using errcode = '42501';
   end if;
 
-  if account_archived then
+  if account_archived and (tg_op = 'INSERT' or moving_to_different_account) then
     raise exception 'transactions are not allowed on archived accounts'
       using errcode = '23514';
   end if;

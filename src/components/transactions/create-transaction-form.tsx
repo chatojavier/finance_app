@@ -12,7 +12,11 @@ import type {
   TransactionCategoryOption,
   TransactionDirection,
 } from "@/features/transactions/types";
-import { filterCategoryOptionsByDirection } from "@/features/transactions/validation";
+import {
+  filterCategoryOptionsByDirection,
+  getDateTimeLocalOffsetMinutes,
+  toDateTimeLocalValue,
+} from "@/features/transactions/validation";
 
 import { TransactionSubmitButton } from "./transaction-submit-button";
 
@@ -23,8 +27,23 @@ type CreateTransactionFormProps = {
   lockedAccount: TransactionAccountOption | null;
   filterError: string | null;
   returnAccountId: string | null;
-  defaultOccurredAt: string;
 };
+
+function getInitialOccurredAtState() {
+  if (typeof window === "undefined") {
+    return {
+      occurredAtValue: "",
+      occurredAtOffsetMinutes: "",
+    };
+  }
+
+  const occurredAtValue = toDateTimeLocalValue(new Date());
+
+  return {
+    occurredAtValue,
+    occurredAtOffsetMinutes: getDateTimeLocalOffsetMinutes(occurredAtValue) ?? "",
+  };
+}
 
 export function CreateTransactionForm({
   accountOptions,
@@ -33,7 +52,6 @@ export function CreateTransactionForm({
   lockedAccount,
   filterError,
   returnAccountId,
-  defaultOccurredAt,
 }: CreateTransactionFormProps) {
   const [state, formAction] = useActionState(
     createTransactionAction,
@@ -41,6 +59,7 @@ export function CreateTransactionForm({
   );
   const [direction, setDirection] = useState<TransactionDirection>("out");
   const [categoryId, setCategoryId] = useState("");
+  const [occurredAtState, setOccurredAtState] = useState(getInitialOccurredAtState);
   const hasActiveAccounts = accountOptions.length > 0 || Boolean(lockedAccount);
 
   const filteredCategoryOptions = filterCategoryOptionsByDirection(categoryOptions, direction);
@@ -70,6 +89,14 @@ export function CreateTransactionForm({
           {filterError}
         </p>
       ) : null}
+
+      <input
+        type="hidden"
+        name="occurred_at_offset_minutes"
+        value={occurredAtState.occurredAtOffsetMinutes}
+        readOnly
+        suppressHydrationWarning
+      />
 
       {!hasActiveAccounts ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5">
@@ -178,7 +205,17 @@ export function CreateTransactionForm({
                 name="occurred_at"
                 required
                 type="datetime-local"
-                defaultValue={defaultOccurredAt}
+                value={occurredAtState.occurredAtValue}
+                onChange={(event) => {
+                  const nextOccurredAtValue = event.target.value;
+
+                  setOccurredAtState({
+                    occurredAtValue: nextOccurredAtValue,
+                    occurredAtOffsetMinutes:
+                      getDateTimeLocalOffsetMinutes(nextOccurredAtValue) ?? "",
+                  });
+                }}
+                suppressHydrationWarning
                 className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-950 transition outline-none focus:border-emerald-500 focus:bg-white"
               />
             </label>

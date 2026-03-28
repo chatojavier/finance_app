@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { validateCreateTransactionInput } from "./validation";
+import { getDateTimeLocalOffsetMinutes, validateCreateTransactionInput } from "./validation";
 
 describe("validateCreateTransactionInput", () => {
   const validInput = {
@@ -8,6 +8,7 @@ describe("validateCreateTransactionInput", () => {
     amount: "10.25",
     direction: "out",
     occurredAt: "2026-03-23T10:30",
+    occurredAtOffsetMinutes: "300",
     categoryId: "",
     note: "  Compra   semanal  ",
   };
@@ -22,8 +23,8 @@ describe("validateCreateTransactionInput", () => {
       direction: "out",
       categoryId: null,
       note: "Compra semanal",
+      occurredAt: "2026-03-23T15:30:00.000Z",
     });
-    expect(result.data?.occurredAt).toMatch(/^2026-03-23T/);
   });
 
   it("rejects missing account ids", () => {
@@ -78,5 +79,20 @@ describe("validateCreateTransactionInput", () => {
     });
 
     expect(result.error).toMatch(/fecha del movimiento es inválida/i);
+  });
+
+  it("rejects missing timezone offsets", () => {
+    const result = validateCreateTransactionInput({
+      ...validInput,
+      occurredAtOffsetMinutes: "",
+    });
+
+    expect(result.error).toMatch(/zona horaria del navegador/i);
+  });
+
+  it("derives the browser offset for a local datetime value", () => {
+    const offset = getDateTimeLocalOffsetMinutes("2026-03-23T10:30");
+
+    expect(offset).toBe(String(new Date(2026, 2, 23, 10, 30).getTimezoneOffset()));
   });
 });

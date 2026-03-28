@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/features/transactions/actions", () => ({
@@ -14,7 +14,7 @@ vi.mock("@/features/transactions/action-state", () => ({
 import { CreateTransactionForm } from "./create-transaction-form";
 
 describe("CreateTransactionForm", () => {
-  it("renders required fields and CTA", () => {
+  it("renders required fields and CTA", async () => {
     render(
       <CreateTransactionForm
         accountOptions={[
@@ -30,15 +30,25 @@ describe("CreateTransactionForm", () => {
         lockedAccount={null}
         filterError={null}
         returnAccountId={null}
-        defaultOccurredAt="2026-03-23T10:30"
       />
     );
 
     expect(screen.getByLabelText(/cuenta/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/monto/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/dirección/i)).toBeInTheDocument();
-    expect(screen.getByLabelText(/fecha/i)).toBeInTheDocument();
+    const dateInput = screen.getByLabelText(/fecha/i) as HTMLInputElement;
+    expect(dateInput).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /guardar movimiento/i })).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(dateInput.value).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/);
+    });
+
+    const offsetInput = document.querySelector(
+      'input[name="occurred_at_offset_minutes"]'
+    ) as HTMLInputElement | null;
+
+    expect(offsetInput?.value).toBe(String(new Date().getTimezoneOffset()));
   });
 
   it("filters categories when direction changes and clears incompatible selection", () => {
@@ -68,7 +78,6 @@ describe("CreateTransactionForm", () => {
         lockedAccount={null}
         filterError={null}
         returnAccountId={null}
-        defaultOccurredAt="2026-03-23T10:30"
       />
     );
 
