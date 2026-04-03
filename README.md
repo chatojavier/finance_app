@@ -88,6 +88,58 @@ pnpm supabase:status
 pnpm supabase:stop
 ```
 
+## CI/CD
+
+This repo uses GitHub Actions for CI and Supabase production migrations, and relies on Vercel Git
+integration for frontend preview and production deployments.
+
+### PR checks
+
+The PR workflow at `.github/workflows/pr-ci.yml` runs four required jobs for pull requests that
+target `main`:
+
+- `quality`: install, lint, typecheck, and unit tests
+- `build`: production Next.js build
+- `database`: local Supabase reset, lint, and SQL verification snippets
+- `e2e`: Playwright against the local Supabase stack
+
+Recommended branch protection for `main`:
+
+- require a pull request before merging
+- require at least one approval
+- require conversation resolution before merging
+- block direct pushes
+- require branches to be up to date before merging
+- mark `quality`, `build`, `database`, `e2e`, and the Vercel preview/deployment check as required
+
+### Post-merge deploys
+
+- Vercel deploys the frontend automatically from Git once the repo is linked.
+- `.github/workflows/deploy-supabase.yml` deploys migrations to the production Supabase project on
+  pushes to `main` that change `supabase/**`.
+
+### Required GitHub secrets
+
+Create these repository or environment secrets before enabling the deploy workflow:
+
+- `SUPABASE_ACCESS_TOKEN`: personal access token for the Supabase CLI
+- `SUPABASE_PROJECT_REF`: production project ref from the Supabase dashboard URL
+- `SUPABASE_DB_PASSWORD`: production database password used by `supabase link` and `supabase db push`
+
+The deploy job is configured to use a GitHub Actions environment named `production`.
+
+### Vercel setup
+
+Configure Vercel outside the repo:
+
+1. Import this GitHub repository into a Vercel project.
+2. Set `main` as the production branch.
+3. Enable preview deployments for pull requests.
+4. Add frontend runtime variables in Vercel Preview and Production environments, not in GitHub
+   Actions.
+5. After the first preview deployment appears in GitHub, add the Vercel deployment check to branch
+   protection for `main`.
+
 ## Git Hooks (Husky)
 
 This repo configures a `pre-commit` hook that runs:
