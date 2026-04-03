@@ -175,8 +175,13 @@ jobs:
 
           for attempt in {1..30}; do
             if output="$(supabase status -o env)"; then
-              api_url="$(printf '%s\n' "$output" | sed -n 's/^API_URL=//p')"
-              anon_key="$(printf '%s\n' "$output" | sed -n 's/^ANON_KEY=//p')"
+              api_url="$(printf '%s\n' "$output" | sed -n 's/^API_URL=//p' | head -n1)"
+              anon_key="$(printf '%s\n' "$output" | sed -n 's/^ANON_KEY=//p' | head -n1)"
+
+              api_url="${api_url#\"}"
+              api_url="${api_url%\"}"
+              anon_key="${anon_key#\"}"
+              anon_key="${anon_key%\"}"
 
               if [ -n "$api_url" ] && [ -n "$anon_key" ]; then
                 {
